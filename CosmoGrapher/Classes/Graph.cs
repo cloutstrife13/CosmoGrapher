@@ -4,6 +4,8 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
+using System.Security.Cryptography;
 using CosmoGrapher.Interfaces;
 using Gremlin.Net.Driver;
 using Gremlin.Net.Structure.IO.GraphSON;
@@ -40,59 +42,70 @@ namespace CosmoGrapher.Classes
             await Client.SubmitAsync<dynamic>(gremlinQuery);
         }
 
-        public IEnumerable<Object> GetVertex<Object>()
+        public IEnumerable<T> GetVertex<T>()
         {
-            //{typeof(T)}
-            string queryBuilder = $"g.V().hasLabel(\"Customer\")";
+            string queryBuilder = $"g.V().hasLabel(\"{typeof(T).Name}\")";
             var result = GetQuery(queryBuilder).Result.ToList();
 
-            IEnumerable<dynamic> l = GetFormattedBaseModel(result);
+            IEnumerable<T> models_unfiltered = GetFormattedBaseModel<T>(result);
+            //List<dynamic> models_filtered = GetFilteredVertexList(models_unfiltered as List<dynamic>);
 
-
-            return l as IEnumerable<Object>;
+            return models_unfiltered;
         }
 
-        private IEnumerable<Object> GetFormattedBaseModel(List<dynamic> l)
+        //private List<dynamic> GetFilteredVertexList(List<dynamic> vertices)
+        //{
+        //    List<dynamic> l = vertices.Select(x => x
+        //        .GetType()
+        //        .GetProperties()
+        //        .Where(p => p.GetValue(x, null) != null)) as List<dynamic>;
+
+        //    return null;
+        //}
+
+        private IEnumerable<T> GetFormattedBaseModel<T>(List<dynamic> l)
         {
-            IList<Object> formattedList = new List<Object>();
+            IList<T> formattedList = new List<T>();
 
             foreach (var entry in l)
             {
-                List<Object> parsedObject = new List<Object>(); 
+                Object obj = Activator.CreateInstance(typeof(T));
                 foreach (var variable in entry)
                 {
                     if(variable.Key == "label" || variable.Key == "type")
                         continue;
 
                     if (variable.Key == "properties")
-                        parsedObject = GetInVertexProperties(variable.Value, parsedObject);
+                        SetInVertexProperties(variable.Value, obj, typeof(T));
+
                     else
-                    {
-                        dynamic o = RuntimeBinder.GetDynamicObject(new Dictionary<string, object>()
-                        {
-                            {variable.Key, variable.Value}
-                        });
-                        parsedObject.Add(o);
-                    }
+                        SetGenericObjectProperty(obj, typeof(T), variable.Key, variable.Value);
                 }
-                formattedList.Add(parsedObject);
+                formattedList.Add((T)obj);
             }
             return formattedList;
         }
 
-        private List<Object> GetInVertexProperties(Dictionary<string, object> vtx_var, List<Object> parsedObject)
+        private void SetInVertexProperties(Dictionary<string, object> vtx_var, Object obj, Type type)
         {
             foreach (var variable in vtx_var)
             {
-                if(variable.Key == PartitionKey) continue;
-                dynamic o = RuntimeBinder.GetDynamicObject(new Dictionary<string, object>()
-                {
-                    {variable.Key, variable.Value}
-                });
-                parsedObject.Add(o);
-            }
+                bool cond1 = (variable.Key == PartitionKey);
+                bool cond2 = (obj.GetType().GetProperty(variable.Key).PropertyType.BaseType.Name != "Object");
+                if(cond1 || cond2) continue;
 
-            return parsedObject;
+                List<object> vars = (variable.Value as IEnumerable<object>).ToList();
+                var val = (vars[0] as Dictionary<string, object>)["value"];
+                if(val == "" || val == null) continue;
+
+                SetGenericObjectProperty(obj, type, variable.Key, val);
+            }
+        }
+
+        private void SetGenericObjectProperty(Object obj, Type type, string key, dynamic value)
+        {
+            PropertyInfo prop = type.GetProperty($"{key}");
+            prop.SetValue(obj, value, null);
         }
 
         public async void AddVertex(Object model)
@@ -185,7 +198,7 @@ namespace CosmoGrapher.Classes
         {
             string propType = v.Value[0].GetType().Name;
             string propVar = (propType == "Property") ? "value" : "inV";
-            System.Reflection.PropertyInfo pi = v.Value[0].GetType().GetProperty(propVar);
+            PropertyInfo pi = v.Value[0].GetType().GetProperty(propVar);
             string propVal = (propType == "Property") ?
                 (string)(pi.GetValue(v.Value[0], null)) :
                 GetEdgeToVertexId((object[]) pi.GetValue(v.Value[0], null));
@@ -195,7 +208,7 @@ namespace CosmoGrapher.Classes
 
         private string GetEdgeToVertexId(object[] relatedObj)
         {
-            System.Reflection.PropertyInfo pi = relatedObj[0].GetType().GetProperty("id");
+            PropertyInfo pi = relatedObj[0].GetType().GetProperty("id");
             return (string) pi.GetValue(relatedObj[0], null);
         }
     }

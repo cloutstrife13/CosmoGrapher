@@ -14,7 +14,7 @@ namespace CosmoGrapher.Interfaces
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        IEnumerable<Object> GetVertex<Object>();
+        IEnumerable<T> GetVertex<T>();
 
         /// <summary>
         /// Adds a new vertex on the backend side.

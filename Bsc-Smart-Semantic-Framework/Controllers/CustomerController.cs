@@ -18,7 +18,7 @@ namespace Bsc_Smart_Semantic_Framework.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CustomerController : ControllerBase
+    public class CustomerController : ODataController
     {
         private readonly ILogger<CustomerController> _logger;
         private readonly DbContextGremlin _dbg;
@@ -29,14 +29,13 @@ namespace Bsc_Smart_Semantic_Framework.Controllers
             _dbg = dbg;
         }
 
-        //[HttpGet]
-        //[EnableQuery()]
-        ////GetInstance()
-        //public IEnumerable<Object> GetAllEntries()
-        //{
-        //    IEnumerable<Object> l = _dbg.DefaultModel.GetVertex<Object>();
-        //    return l;
-        //}
+        [HttpGet]
+        [EnableQuery()]
+        //GetInstance()
+        public IEnumerable<Customer> GetAllEntries()
+        {
+            return _dbg.DefaultModel.GetVertex<Customer>();
+        }
 
         [HttpPost("add")]
         // PostNewInstance()
