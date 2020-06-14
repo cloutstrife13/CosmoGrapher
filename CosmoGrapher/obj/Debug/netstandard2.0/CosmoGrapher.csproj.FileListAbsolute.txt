@@ -1,8 +1,0 @@
-C:\Users\andyl\source\repos\Bsc-Smart-Semantic-Framework\CosmoGrapher\bin\Debug\netstandard2.0\CosmoGrapher.deps.json
-C:\Users\andyl\source\repos\Bsc-Smart-Semantic-Framework\CosmoGrapher\bin\Debug\netstandard2.0\CosmoGrapher.dll
-C:\Users\andyl\source\repos\Bsc-Smart-Semantic-Framework\CosmoGrapher\obj\Debug\netstandard2.0\CosmoGrapher.csprojAssemblyReference.cache
-C:\Users\andyl\source\repos\Bsc-Smart-Semantic-Framework\CosmoGrapher\obj\Debug\netstandard2.0\CosmoGrapher.AssemblyInfoInputs.cache
-C:\Users\andyl\source\repos\Bsc-Smart-Semantic-Framework\CosmoGrapher\obj\Debug\netstandard2.0\CosmoGrapher.AssemblyInfo.cs
-C:\Users\andyl\source\repos\Bsc-Smart-Semantic-Framework\CosmoGrapher\bin\Debug\netstandard2.0\CosmoGrapher.pdb
-C:\Users\andyl\source\repos\Bsc-Smart-Semantic-Framework\CosmoGrapher\obj\Debug\netstandard2.0\CosmoGrapher.dll
-C:\Users\andyl\source\repos\Bsc-Smart-Semantic-Framework\CosmoGrapher\obj\Debug\netstandard2.0\CosmoGrapher.pdb
